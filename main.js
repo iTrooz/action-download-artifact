@@ -190,26 +190,26 @@ async function main() {
                 archive_format: "zip",
             })
 
+            const basePath = name ? path : pathname.join(path, artifact.name)
             if (skipUnpack) {
-                fs.writeFileSync(`${artifact.name}.zip`, Buffer.from(zip.data), 'binary')
+                fs.writeFileSync(`${basePath}.zip`, Buffer.from(zip.data), 'binary')
                 continue
             }
 
-            const dir = name ? path : pathname.join(path, artifact.name)
 
-            fs.mkdirSync(dir, { recursive: true })
+            fs.mkdirSync(basePath, { recursive: true })
 
             const adm = new AdmZip(Buffer.from(zip.data))
 
             core.startGroup(`==> Extracting: ${artifact.name}.zip`)
             adm.getEntries().forEach((entry) => {
                 const action = entry.isDirectory ? "creating" : "inflating"
-                const filepath = pathname.join(dir, entry.entryName)
+                const filepath = pathname.join(basePath, entry.entryName)
 
                 core.info(`  ${action}: ${filepath}`)
             })
 
-            adm.extractAllTo(dir, true)
+            adm.extractAllTo(basePath, true)
             core.endGroup()
         }
     } catch (error) {
